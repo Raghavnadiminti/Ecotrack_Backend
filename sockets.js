@@ -3,11 +3,12 @@ const socket=require('socket.io')
 const http=require('http')
 const cors=require('cors')
 const {locations}=require('./models.js')
+const {request_locations,getDistance}=require('./functions.js')
+
+
+
 
 app=express();
-
-
-
 const server=http.createServer(app);
 app.use(express.json())
 app.use(cors({
@@ -25,7 +26,13 @@ const io=socket(server,{cors:{
 }});
 
 
-io.on('connection',(socket)=>{
+const location_socket=io.of('/location')
+const UWC_socket=io.of('/collector-waste-confirm')
+
+
+
+
+location_socket.on('connection',(socket)=>{
     console.log("client connected")
    
       socket.emit('req_loc',{req:true})
@@ -90,53 +97,46 @@ io.on('connection',(socket)=>{
 })
 
 
-async function request_locations(city,lat2,lon2,callback){
-   
-    let min=99999999999999;
-    let id_=-1;
-    const k=await locations.findOne({City:'vksp'})
-   
-    if(k){
-    let locations=k.collectors;
-    locations.forEach((collector,index)=>{
-          
-        const {id,lat,lon}=collector;
-          console.log(collector)
-        let dis=getDistance(lat,lon,lat2,lon2);
+UWC_socket.on('connection',(socket)=>{
 
-        console.log(dis)
+      const collectors={}
 
-         if(dis<=min){
-          min=dis;
-          id_=id;
-         }
-    })
-   
-    callback(id_);
-  }
-  else{
-     callback("not ok")
-  }
+      socket.on('collector_join',(id)=>{
+        console.log(id)
+           collectors[id]=socket.id                        
+      })
 
-    }
+      socket.on('user_req',({username,collectorid,weight})=>{
+        console.log(username,collectorid,weight)
+        const collector= collectors[collectorid];
+        console.log(collectors)
+        if(collector){
+         
+           console.log("available",collector)
+            UWC_socket.to(collector).emit('waste_update',{username:username,weight:weight}) 
+            
+        }
+      })
 
+      socket.on('disconnect',()=>{
+        Object.keys(collectors).forEach((collectorid)=>{  
+           
+             if(collectors[collectorid]==socket.id){
+                delete collectors[collectorid] 
+             }
 
+        })
+      })
 
-function getDistance(lat1, lon1, lat2, lon2) { const R = 6371; 
-  
-  lat1=parseFloat(lat1)
-  lon1=parseFloat(lon1)
-  lat2=parseFloat(lat2)
-  lon2=parseFloat(lon2) 
- 
-const dLat = (lat2 - lat1) * Math.PI / 180; 
-const dLon = (lon2 - lon1) * Math.PI / 180; 
-const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) * Math.sin(dLon / 2); 
-const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)); 
-const distance = R * c; 
-return distance;
-}
+})
 
 
 
-module.exports={ request_locations,server,app}
+
+
+
+
+
+
+
+module.exports={server,app}
