@@ -26,13 +26,14 @@ const io=socket(server,{cors:{
 }});
 
 
-const location_socket=io.of('/location')
+const collector_location_socket=io.of('/location')
 const UWC_socket=io.of('/collector-waste-confirm')
+const req_pend=io.of('/req_pend')
 
 
 
 
-location_socket.on('connection',(socket)=>{
+collector_location_socket.on('connection',(socket)=>{
     console.log("client connected")
    
       socket.emit('req_loc',{req:true})
@@ -131,7 +132,55 @@ UWC_socket.on('connection',(socket)=>{
 })
 
 
+req_pend.on('connection',(socket)=>{
+           let collectors={}
+           let location={}
+           let pres=0
+           let req={}
+           let users={}
 
+           socket.on('user_join',({id,username})=>{
+            console.log(id)
+               users[username]=socket.id;
+                                      
+          })
+
+
+           socket.on('collector_join',({id,city})=>{
+            console.log(id)
+               collectors[id]=socket.id 
+               if(!loc[city]){
+                loc[city]=[id]
+               }
+               else{
+                loc[city].push(id)
+               }
+                                      
+          })
+         
+         socket.on('user_req',({username,loc})=>{
+               pres+=1
+               req[username]=pres
+               Object.entries(location).forEach(([key,value])=>{
+                    if(key==loc){
+                      let m=value 
+                      for(let j in m){
+                          let collector=collectors[j]
+                          req_pend.to(collector).emit('requested',{username:username,loc:loc})
+                      }
+                    }
+               })
+         })
+
+         socket.on('accept_req',({id,username})=>{
+                        let user=users[username]
+                        req_pend.to(user).emit('accepted',{id:id})
+                        delete req[username] 
+                        pres-=1 
+         })
+
+
+})
 
 
 

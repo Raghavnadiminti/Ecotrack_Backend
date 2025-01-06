@@ -23,10 +23,10 @@ async function request_locations(city,lat2,lon2,callback){
     locations.forEach((collector,index)=>{
           
         const {id,lat,lon}=collector;
-          console.log(collector)
+          
         let dis=getDistance(lat,lon,lat2,lon2);
 
-        console.log(dis)
+       
 
          if(dis<=min){
           min=dis;

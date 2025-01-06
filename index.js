@@ -9,11 +9,9 @@ const {locations,user_login_coll,admin_login_coll,collector_login_coll}=require(
 
 
 
-
-
 app.post('/users-request',async (req,res)=>{
   
-        const {username,email,u_lon,u_lat}=req.query;
+        const {username,email,u_lon,u_lat}=req.body;
         console.log(req.body)
         console.log(username,email,u_lon,u_lat)
         let near_user;
