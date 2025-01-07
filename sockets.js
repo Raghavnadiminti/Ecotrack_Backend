@@ -134,10 +134,12 @@ UWC_socket.on('connection',(socket)=>{
 
 req_pend.on('connection',(socket)=>{
            let collectors={}
+           let users={}
+
            let location={}
            let pres=0
            let req={}
-           let users={}
+           
 
            socket.on('user_join',({id,username})=>{
             console.log(id)
@@ -149,11 +151,11 @@ req_pend.on('connection',(socket)=>{
            socket.on('collector_join',({id,city})=>{
             console.log(id)
                collectors[id]=socket.id 
-               if(!loc[city]){
-                loc[city]=[id]
+               if(!location[city]){
+                location[city]=[id]
                }
                else{
-                loc[city].push(id)
+                location[city].push(id)
                }
                                       
           })
@@ -164,7 +166,7 @@ req_pend.on('connection',(socket)=>{
                Object.entries(location).forEach(([key,value])=>{
                     if(key==loc){
                       let m=value 
-                      for(let j in m){
+                      for(let j of m){
                           let collector=collectors[j]
                           req_pend.to(collector).emit('requested',{username:username,loc:loc})
                       }
@@ -173,11 +175,41 @@ req_pend.on('connection',(socket)=>{
          })
 
          socket.on('accept_req',({id,username})=>{
-                        let user=users[username]
+          let  collector=collectors[id]
+          let user=users[username]
+                        if(!req[username] && collector){
+                            
+                            req_pend.to(collector).emit('reqaccept',{req:false,msg:"already accepted"})
+                        }
+                       else{
+                         if(user && collector){
                         req_pend.to(user).emit('accepted',{id:id})
+                        req_pend.to(collector).emit('reqaccept',{req:true,msg:"req accepted"})
                         delete req[username] 
-                        pres-=1 
+                        pres=Math.max(0,pres-1) 
+                         }
+                         
+                       }
          })
+
+         socket.on('disconnect', () => {
+          for (let [username, socketId] of Object.entries(users)) {
+            if (socketId === socket.id) {
+              delete users[username];
+              break;
+            }
+          }
+        
+          for (let [id, socketId] of Object.entries(collectors)) {
+            if (socketId === socket.id) {
+              delete collectors[id];
+              for (let [city, ids] of Object.entries(location)) {
+                location[city] = ids.filter(collectorId => collectorId !== id);
+              }
+              break;
+            }
+          }
+        });
 
 
 })
