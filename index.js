@@ -5,7 +5,7 @@ const {server,app}=require('./sockets')
 const {request_locations}=require('./functions')
 const socket=require('socket.io')
 const http=require('http')
-const {locations,user_login_coll,admin_login_coll,collector_login_coll}=require('./models')
+const {locations,user_login_coll,admin_login_coll,collector_login_coll, collectors_data}=require('./models')
 
 
 
@@ -77,8 +77,9 @@ app.post('/collector-register',async (req,res)=>{
         }
         else{
                 let collector=new collector_login_coll({email:email,id:id,username:username,password:password})
+                let collecto=new collectors_data({id:id,lat:null,lon:null,pending:[]})
                 await collector.save();
-              
+                await collecto.save()
                 res.send(true)
         }
 

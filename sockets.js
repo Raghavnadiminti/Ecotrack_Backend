@@ -2,7 +2,7 @@ const express=require('express')
 const socket=require('socket.io')
 const http=require('http')
 const cors=require('cors')
-const {locations}=require('./models.js')
+const {locations,collectors_data}=require('./models.js')
 const {request_locations,getDistance}=require('./functions.js')
 
 
@@ -111,12 +111,17 @@ UWC_socket.on('connection',(socket)=>{
         console.log(username,collectorid,weight)
         const collector= collectors[collectorid];
         console.log(collectors)
-        if(collector){
-         
+        if(collector){   
+
            console.log("available",collector)
             UWC_socket.to(collector).emit('waste_update',{username:username,weight:weight}) 
             
         }
+      })
+      socket.on('req_confoirm',async ({collectorid,username})=>{
+        const collector= collectors[collectorid]; 
+        await collectors_data.updateOne({id:collectorid},{$pull:{pending:{username}}})
+
       })
 
       socket.on('disconnect',()=>{
@@ -130,19 +135,19 @@ UWC_socket.on('connection',(socket)=>{
       })
 
 })
+let collectors={}
+let users={}
 
+var location={}
+let pres=0
+let req={}
 
 req_pend.on('connection',(socket)=>{
-           let collectors={}
-           let users={}
-
-           let location={}
-           let pres=0
-           let req={}
+          
            
 
-           socket.on('user_join',({id,username})=>{
-            console.log(id)
+           socket.on('user_join',({username})=>{
+               console.log(username)
                users[username]=socket.id;
                                       
           })
@@ -157,12 +162,13 @@ req_pend.on('connection',(socket)=>{
                else{
                 location[city].push(id)
                }
-                                      
+                   console.log(location)                   
           })
          
          socket.on('user_req',({username,loc})=>{
                pres+=1
                req[username]=pres
+               console.log("user requested",username,loc,location)
                Object.entries(location).forEach(([key,value])=>{
                     if(key==loc){
                       let m=value 
@@ -174,7 +180,7 @@ req_pend.on('connection',(socket)=>{
                })
          })
 
-         socket.on('accept_req',({id,username})=>{
+         socket.on('accept_req',async ({id,username})=>{
           let  collector=collectors[id]
           let user=users[username]
                         if(!req[username] && collector){
@@ -183,12 +189,13 @@ req_pend.on('connection',(socket)=>{
                         }
                        else{
                          if(user && collector){
+                          await collectors_data.updateOne({id:id}, {$push:{pending:{username}}})
                         req_pend.to(user).emit('accepted',{id:id})
                         req_pend.to(collector).emit('reqaccept',{req:true,msg:"req accepted"})
                         delete req[username] 
                         pres=Math.max(0,pres-1) 
                          }
-                         
+
                        }
          })
 
