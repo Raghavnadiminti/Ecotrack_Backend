@@ -33,10 +33,20 @@ const req_pend=io.of('/req_pend')
 
 
 
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 collector_location_socket.on('connection',(socket)=>{
-    console.log("client connected")
+   
    
       socket.emit('req_loc',{req:true})
+
+      socket.on('collector_join',({id})=>{
+            collector_loc_socketid[id]=socket.id;
+      })
+      socket.on('user_join',({username})=>{
+              user_loc[username]=socket.id;
+      })
 
       socket.on('user_location_info',async (user_loc)=>{
                  const {city,id_,lat1,lon1}=location_info;
@@ -94,17 +104,35 @@ collector_location_socket.on('connection',(socket)=>{
           
       }) 
 
+     
+
   
 })
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+const collector_loc_socketid={}
+const collector_loc={}
+const user_loc={}
+    
 
 
+
+
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 UWC_socket.on('connection',(socket)=>{
 
       const collectors={}
 
-      socket.on('collector_join',(id)=>{
-        console.log(id)
+      socket.on('collector_join',({id})=>{
+        console.log(id,"collector joined")
            collectors[id]=socket.id                        
+      })
+
+      socket.on('user_join',({username})=>{
+        console.log("user joined",username)
+             user_loc[username]=socket.id;
       })
 
       socket.on('user_req',({username,collectorid,weight})=>{
@@ -120,21 +148,51 @@ UWC_socket.on('connection',(socket)=>{
       })
       socket.on('req_confoirm',async ({collectorid,username})=>{
         const collector= collectors[collectorid]; 
-        await collectors_data.updateOne({id:collectorid},{$pull:{pending:{username}}})
+        try{
+        await collectors_data.updateOne({id:collectorid},{$pull:{pending:{username}}})}
+        catch(err){
+          console.log(err)
+        }
 
       })
 
-      socket.on('disconnect',()=>{
-        Object.keys(collectors).forEach((collectorid)=>{  
-           
-             if(collectors[collectorid]==socket.id){
-                delete collectors[collectorid] 
-             }
-
-        })
+      socket.on('get_location_collector',({id,lat,lan})=>{
+        console.log("get_location_collectior",id,lat,lan)
+                 collector_loc[id]={lat,lan}
       })
+
+      socket.on('give_collector_loc',({id,username})=>{
+
+        console.log("give_collector",id,username)
+        let user=user_loc[username]
+        if(user){
+          console.log(collector_loc[id])
+        UWC_socket.to(user).emit('collector_loc',{location:collector_loc[id]})
+        }
+         
+      })
+
+
+      socket.on('disconnect', () => {
+        console.log(`Socket disconnected: ${socket.id}`);
+     
+        Object.keys(collectors).forEach((collectorid) => {
+            if (collectors[collectorid] === socket.id) {
+                console.log(`Collector ${collectorid} disconnected.`);
+                delete collectors[collectorid];
+            }
+        });
+
+        Object.keys(user_loc).forEach((username) => {
+            if (user_loc[username] === socket.id) {
+                console.log(`User ${username} disconnected.`);
+                delete user_loc[username];
+            }
+        });
+    });
 
 })
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 let collectors={}
 let users={}
 
@@ -147,14 +205,14 @@ req_pend.on('connection',(socket)=>{
            
 
            socket.on('user_join',({username})=>{
-               console.log(username)
+            
                users[username]=socket.id;
                                       
           })
 
 
            socket.on('collector_join',({id,city})=>{
-            console.log(id)
+        
                collectors[id]=socket.id 
                if(!location[city]){
                 location[city]=[id]
@@ -162,7 +220,7 @@ req_pend.on('connection',(socket)=>{
                else{
                 location[city].push(id)
                }
-                   console.log(location)                   
+                                  
           })
          
          socket.on('user_req',({username,loc})=>{
