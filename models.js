@@ -8,7 +8,7 @@ const collectors_scheema=mongoose.Schema({
     lon:String,
     pending:[{
         username:String,
-        loacation:String,
+       
         reqId:Number,
     }],
     tripno:Number

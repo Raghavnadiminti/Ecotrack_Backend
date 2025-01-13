@@ -241,13 +241,17 @@ req_pend.on('connection',(socket)=>{
          socket.on('accept_req',async ({id,username})=>{
           let  collector=collectors[id]
           let user=users[username]
+          console.log(id,username)
                         if(!req[username] && collector){
                             
                             req_pend.to(collector).emit('reqaccept',{req:false,msg:"already accepted"})
                         }
                        else{
                          if(user && collector){
-                          await collectors_data.updateOne({id:id}, {$push:{pending:{username}}})
+                          let k=await collectors_data.findOne({id:id}).then(()=>{console.log("HI")}).catch((err)=>{console.log(err)})
+                          console.log(k)
+                          await collectors_data.findOneAndUpdate({id:id}, {$push:{pending:{username:username,reqId:pres}}}).then(()=>{console.log("HI")}).catch((err)=>{console.log(err)})
+
                         req_pend.to(user).emit('accepted',{id:id})
                         req_pend.to(collector).emit('reqaccept',{req:true,msg:"req accepted"})
                         delete req[username] 
