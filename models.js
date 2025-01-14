@@ -11,7 +11,8 @@ const collectors_scheema=mongoose.Schema({
        
         reqId:Number,
     }],
-    tripno:Number
+    tripno:Number,
+    tripStatus:true
 })
 
 const location_scheema=mongoose.Schema({

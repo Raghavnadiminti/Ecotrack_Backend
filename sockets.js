@@ -239,9 +239,13 @@ req_pend.on('connection',(socket)=>{
          })
 
          socket.on('accept_req',async ({id,username})=>{
+
           let  collector=collectors[id]
+
           let user=users[username]
+
           console.log(id,username)
+          
                         if(!req[username] && collector){
                             
                             req_pend.to(collector).emit('reqaccept',{req:false,msg:"already accepted"})
