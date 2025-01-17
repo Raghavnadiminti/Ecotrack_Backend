@@ -99,4 +99,5 @@ app.post('/admin-register',async (req,res)=>{
         }
 })
 
-server.listen(5000,()=>{console.log("listening")})
+const port=process.env.PORT
+server.listen(port,()=>{console.log("listening")})

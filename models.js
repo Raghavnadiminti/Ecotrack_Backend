@@ -1,6 +1,6 @@
 const mongoose=require("mongoose") 
-
-mongoose.connect('mongodb://localhost:27017/') 
+require('dotenv').config();
+mongoose.connect(process.env.MONGO_URL) 
 
 
 const collectors_scheema=mongoose.Schema({
@@ -13,7 +13,7 @@ const collectors_scheema=mongoose.Schema({
         reqId:Number,
     }],
     tripno:Number,
-    tripStatus:false
+    tripStatus:Boolean
 })
 
 const location_scheema=mongoose.Schema({
