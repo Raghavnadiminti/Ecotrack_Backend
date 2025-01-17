@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: B_P_M_s
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node index.js
+    envVars:
+      - key: MONGO_URL
+        value: 'mongodb://localhost:27017/'
+      - key: PORT
+        value: 5000
