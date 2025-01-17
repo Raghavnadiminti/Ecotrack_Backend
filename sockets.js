@@ -58,11 +58,7 @@ collector_location_socket.on('connection',(socket)=>{
       socket.on('getlocations',async (location_info)=>{
       
         const {id_,lat1,lon1}=location_info;
-       
-        
-
-         const k=await locations.findOne({City:'vksp'})
-       
+         const k=await locations.findOne({City:'vksp'})       
          if(k){
              try{   
             
@@ -71,8 +67,7 @@ collector_location_socket.on('connection',(socket)=>{
                 if(collector){
                     collector.lat=lat1;
                     collector.lon=lon1;
-                }
-                
+                }                
                 else{
 
                   k.collectors.push({
@@ -84,8 +79,7 @@ collector_location_socket.on('connection',(socket)=>{
                 } 
               await  k.save(); 
                }
-              catch(e){console.log(e)}
-                          
+              catch(e){console.log(e)}                          
          }
          else{
 
@@ -99,8 +93,6 @@ collector_location_socket.on('connection',(socket)=>{
         });
       await  city.save();
          }
-
-
           
       }) 
 
@@ -112,15 +104,7 @@ collector_location_socket.on('connection',(socket)=>{
 const collector_loc_socketid={}
 const collector_loc={}
 const user_loc={}
-    
 
-
-
-
-
-
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 UWC_socket.on('connection',(socket)=>{
 
       const collectors={}
@@ -160,6 +144,7 @@ UWC_socket.on('connection',(socket)=>{
         console.log("get_location_collectior",id,lat,lan)
                  collector_loc[id]={lat,lan}
       })
+
 
       socket.on('give_collector_loc',({id,username})=>{
 
@@ -219,23 +204,29 @@ req_pend.on('connection',(socket)=>{
                }
                else{
                 location[city].push(id)
-               }
-                                  
+               }                                  
           })
          
          socket.on('user_req',({username,loc})=>{
                pres+=1
-               req[username]=pres
+               req[username]={id:pres,location:loc}
                console.log("user requested",username,loc,location)
+               let flag=false
                Object.entries(location).forEach(([key,value])=>{
                     if(key==loc){
                       let m=value 
                       for(let j of m){
                           let collector=collectors[j]
+                          flag=true
                           req_pend.to(collector).emit('requested',{username:username,loc:loc})
                       }
                     }
                })
+
+             if(!flag){                
+              let user=users[username]
+              req_pend.to(user).emit('accepted',{id:"collectors not available"})
+        }               
          })
 
          socket.on('accept_req',async ({id,username})=>{
