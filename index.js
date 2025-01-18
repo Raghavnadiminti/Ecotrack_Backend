@@ -21,7 +21,7 @@ app.post('/users-request',async (req,res)=>{
         res.send({near:near_user}) 
 })
 
-app.post('/user-login',async (req,res)=>{
+app.get('/user-login',async (req,res)=>{
 
           const {username,password}=req.query;
           let k = await user_login_coll.findOne({username:username,password:password}) 
@@ -32,7 +32,7 @@ app.post('/user-login',async (req,res)=>{
                 res.send(false)
           }
 })
-app.post('/admin-login',async (req,res)=>{
+app.get('/admin-login',async (req,res)=>{
 
         const {id,username,password}=req.body;
         let k = await admin_login_coll.findOne({id:id,username:username,password:password}) 
@@ -43,7 +43,7 @@ app.post('/admin-login',async (req,res)=>{
               res.send(false)
         }
 })
-app.post('/collector-login',async (req,res)=>{
+app.get('/collector-login',async (req,res)=>{
 
         const {id,username,password}=req.body;
         let k = await collector_login_coll.findOne({id:id,username:username,password:password}) 
