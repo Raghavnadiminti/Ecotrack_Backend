@@ -21,6 +21,11 @@ app.post('/users-request',async (req,res)=>{
         res.send({near:near_user}) 
 })
 
+app.get('/',(res,req)=>{
+      
+      res.send("welcome blockchain-based-plastic-waste-management-system")
+})
+
 app.get('/user-login',async (req,res)=>{
 
           const {username,password}=req.query;
