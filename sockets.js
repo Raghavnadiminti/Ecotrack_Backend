@@ -104,14 +104,14 @@ collector_location_socket.on('connection',(socket)=>{
 const collector_loc_socketid={}
 const collector_loc={}
 const user_loc={}
-
+const collectors_ll={}
 UWC_socket.on('connection',(socket)=>{
 
-      const collectors={}
+     
 
       socket.on('collector_join',({id})=>{
         console.log(id,"collector joined")
-           collectors[id]=socket.id                        
+           collectors_ll[id]=socket.id                        
       })
 
       socket.on('user_join',({username})=>{
@@ -121,8 +121,8 @@ UWC_socket.on('connection',(socket)=>{
 
       socket.on('user_req',({username,collectorid,weight})=>{
         console.log(username,collectorid,weight)
-        const collector= collectors[collectorid];
-        console.log(collectors)
+        const collector= collectors_ll[collectorid];
+        console.log(collectors_ll)
         if(collector){   
 
            console.log("available",collector)
@@ -131,7 +131,7 @@ UWC_socket.on('connection',(socket)=>{
         }
       })
       socket.on('req_confoirm',async ({collectorid,username})=>{
-        const collector= collectors[collectorid]; 
+        const collector= collectors_ll[collectorid]; 
         try{
         await collectors_data.updateOne({id:collectorid},{$pull:{pending:{username}}})}
         catch(err){
@@ -161,10 +161,10 @@ UWC_socket.on('connection',(socket)=>{
       socket.on('disconnect', () => {
         console.log(`Socket disconnected: ${socket.id}`);
      
-        Object.keys(collectors).forEach((collectorid) => {
-            if (collectors[collectorid] === socket.id) {
+        Object.keys(collectors_ll).forEach((collectorid) => {
+            if (collectors_ll[collectorid] === socket.id) {
                 console.log(`Collector ${collectorid} disconnected.`);
-                delete collectors[collectorid];
+                delete collectors_ll[collectorid];
             }
         });
 

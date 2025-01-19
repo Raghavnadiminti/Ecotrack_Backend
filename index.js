@@ -82,7 +82,7 @@ app.post('/collector-register',async (req,res)=>{
         }
         else{
                 let collector=new collector_login_coll({email:email,id:id,username:username,password:password})
-                let collecto=new collectors_data({id:id,lat:null,lon:null,pending:[]})
+                let collecto=new collectors_data({id:id,lat:null,lon:null,pending:[],tripno:0,tripStatus:false})
                 await collector.save();
                 await collecto.save()
                 res.send(true)
