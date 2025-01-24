@@ -124,15 +124,17 @@ UWC_socket.on('connection',(socket)=>{
         const collector= collectors_ll[collectorid];
         console.log(collectors_ll)
         if(collector){   
-
+           collectors_data.findOneAndUpdate({id:collectorid},{$inc:{amount:weight}}) 
            console.log("available",collector)
             UWC_socket.to(collector).emit('waste_update',{username:username,weight:weight}) 
             
         }
       })
+
       socket.on('req_confoirm',async ({collectorid,username})=>{
         const collector= collectors_ll[collectorid]; 
         try{
+          
         await collectors_data.updateOne({id:collectorid},{$pull:{pending:{username}}})}
         catch(err){
           console.log(err)
@@ -177,6 +179,7 @@ UWC_socket.on('connection',(socket)=>{
     });
 
 })
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 let collectors={}
 let users={}
@@ -211,7 +214,7 @@ req_pend.on('connection',(socket)=>{
          
          socket.on('user_req',({username,loc,cords})=>{
                pres+=1
-               req[username]={id:pres,location:loc,cords}
+               req[username]={id:pres,location:loc,cords:cords}
                console.log("user requested",username,loc,location,cords)
                let flag=false
                Object.entries(location).forEach(([key,value])=>{

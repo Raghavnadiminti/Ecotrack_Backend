@@ -118,7 +118,13 @@ app.get('/get-collector-info/:id',async (req,res)=>{
 
 
 })
+app.get('/amount-update/:id/:weight',async (req,res)=>{
 
+      let id=req.params.id
+      let weight=req.params.weight
+      let k=await collectors_data.findOneAndUpdate({id:id},{$inc:{amount:weight}}) 
+
+})
 
 const port=process.env.PORT
 server.listen(port,()=>{console.log("listening")})

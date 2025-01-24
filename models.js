@@ -13,7 +13,8 @@ const collectors_scheema=mongoose.Schema({
         reqId:Number,
     }],
     tripno:Number,
-    tripStatus:Boolean
+    tripStatus:Boolean,
+    amount:Number,
 })
 
 const location_scheema=mongoose.Schema({
