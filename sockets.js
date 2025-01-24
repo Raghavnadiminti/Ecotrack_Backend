@@ -192,6 +192,7 @@ req_pend.on('connection',(socket)=>{
            socket.on('user_join',({username})=>{
             
                users[username]=socket.id;
+               
                                       
           })
 
@@ -204,13 +205,14 @@ req_pend.on('connection',(socket)=>{
                }
                else{
                 location[city].push(id)
-               }                                  
+               }      
+               req_pend.to(socket.id).emit('joined',{req:req})                            
           })
          
-         socket.on('user_req',({username,loc})=>{
+         socket.on('user_req',({username,loc,cords})=>{
                pres+=1
-               req[username]={id:pres,location:loc}
-               console.log("user requested",username,loc,location)
+               req[username]={id:pres,location:loc,cords}
+               console.log("user requested",username,loc,location,cords)
                let flag=false
                Object.entries(location).forEach(([key,value])=>{
                     if(key==loc){
@@ -218,7 +220,7 @@ req_pend.on('connection',(socket)=>{
                       for(let j of m){
                           let collector=collectors[j]
                           flag=true
-                          req_pend.to(collector).emit('requested',{username:username,loc:loc})
+                          req_pend.to(collector).emit('requested',{id:pres,username:username,loc:loc,cords:cords})
                       }
                     }
                })
@@ -242,6 +244,7 @@ req_pend.on('connection',(socket)=>{
                             req_pend.to(collector).emit('reqaccept',{req:false,msg:"already accepted"})
                         }
                        else{
+
                          if(user && collector){
                           let k=await collectors_data.findOne({id:id}).then(()=>{console.log("HI")}).catch((err)=>{console.log(err)})
                           console.log(k)

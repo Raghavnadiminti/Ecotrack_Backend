@@ -28,7 +28,7 @@ app.get('/',(req,res)=>{
 
 app.get('/user-login',async (req,res)=>{
 
-          const {username,password}=req.query;
+          const {username,password}=req.params.query;
           let k = await user_login_coll.findOne({username:username,password:password}) 
           if(k){
                 res.send(true)
@@ -39,7 +39,7 @@ app.get('/user-login',async (req,res)=>{
 })
 app.get('/admin-login',async (req,res)=>{
 
-        const {id,username,password}=req.body;
+        const {id,username,password}=req.params.body;
         let k = await admin_login_coll.findOne({id:id,username:username,password:password}) 
         if(k){
               res.send(true)
@@ -50,7 +50,7 @@ app.get('/admin-login',async (req,res)=>{
 })
 app.get('/collector-login',async (req,res)=>{
 
-        const {id,username,password}=req.body;
+        const {id,username,password}=req.params.body;
         let k = await collector_login_coll.findOne({id:id,username:username,password:password}) 
         if(k){
               res.send(true)
@@ -91,6 +91,11 @@ app.post('/collector-register',async (req,res)=>{
 
 })
 app.post('/admin-register',async (req,res)=>{
+
+      //you seeing the the code and thinking why this guy is not using any autentication 
+      //My answer is i can but it is simple project .i contrated more on features of the app rather than the signin login justchill not to worry
+
+
         const {email,username,password}=req.body;
         let k = await admin_login_coll.findOne({username:username}) 
         if(k){
@@ -103,6 +108,17 @@ app.post('/admin-register',async (req,res)=>{
                 res.send(true)
         }
 })
+
+app.get('/get-collector-info/:id',async (req,res)=>{
+      const {id}=req.params.body
+      let k= await collectors_data.find({id:id})
+      if(k){
+            res.send(k)
+      }
+
+
+})
+
 
 const port=process.env.PORT
 server.listen(port,()=>{console.log("listening")})
