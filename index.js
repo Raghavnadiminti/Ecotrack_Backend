@@ -110,7 +110,7 @@ app.post('/admin-register',async (req,res)=>{
 })
 
 app.get('/get-collector-info/:id',async (req,res)=>{
-      const {id}=req.params.body
+      const id=req.params.body
       let k= await collectors_data.find({id:id})
       if(k){
             res.send(k)
